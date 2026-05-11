@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>上班为了不上班 · 从这里开始</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --text: #333333;
+    --text-muted: #888888;
+    --text-light: #aaaaaa;
+    --border: #e8e8e8;
+    --table-bg: #f5f5f5;
+    --accent: #2e6b4f;
+    --accent-light: #e8f2ed;
+    --accent2: #c8883a;
+    --accent2-light: #fdf3e8;
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+  }
+
+  .container { max-width: 680px; margin: 0 auto; }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .header h1 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .header p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* 工具卡片 */
+  .tool-card {
+    background: var(--accent);
+    border-radius: 16px;
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    gap: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    transition: opacity 0.15s;
+  }
+
+  .tool-card:hover { opacity: 0.92; }
+
+  .tool-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .tool-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .tool-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 4px;
+  }
+
+  .tool-arrow {
+    font-size: 24px;
+    color: rgba(255,255,255,0.8);
+    flex-shrink: 0;
+  }
+
+  /* 分区 */
+  .section { margin-bottom: 24px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+
+  .section-bar {
+    width: 3px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .section.shiban .section-bar { background: var(--accent2); }
+  .section.jiaocheng .section-bar { background: #5b8dd9; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .section-count {
+    font-size: 11px;
+    color: var(--text-light);
+    background: var(--table-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  /* 文章卡片 */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .article-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s;
+    gap: 12px;
+  }
+
+  .article-item:last-child { border-bottom: none; }
+  .article-item:hover { background: #fafafa; }
+
+  .section.shiban .article-item:hover { background: #fdf9f5; }
+  .section.jiaocheng .article-item:hover { background: #f5f8fd; }
+
+  .article-num {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .section.shiban .article-num { color: var(--accent2); }
+  .section.jiaocheng .article-num { color: #5b8dd9; }
+
+  .article-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .article-arrow {
+    color: var(--text-light);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-tag">上班为了不上班</div>
+    <h1>从这里开始</h1>
+    <p>普通人定投纳指100，记录通往财务自由的每一步</p>
+  </div>
+
+  <a href="https://nowork-free.github.io/freedom-calculator" target="_blank" class="tool-card">
+    <div>
+      <div class="tool-label">互动工具</div>
+      <div class="tool-title">财务自由测算</div>
+      <div class="tool-desc">输入3个数字，算出你的自由时间</div>
+    </div>
+    <div class="tool-arrow">→</div>
+  </a>
+
+  <!-- 定投实盘 -->
+  <div class="section shiban">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div class="section-title">定投实盘</div>
+      <div class="section-count">2篇</div>
+    </div>
+    <div class="card">
+      <a href="https://mp.weixin.qq.com/s/R65KkYhr2p7_VYvXGhaX1A" target="_blank" class="article-item">
+        <div class="article-num">01</div>
+        <div class="article-title">普通人也能财务自由｜实盘01：开始了</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/dOo3KCXEwPToX52Mh01dUA" target="_blank" class="article-item">
+        <div class="article-num">00</div>
+        <div class="article-title">实盘日志 | 开篇：我要用30年，证明1500元能改变什么</div>
+        <div class="article-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 实操教程 -->
+  <div class="section jiaocheng">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div class="section-title">实操教程</div>
+      <div class="section-count">3篇</div>
+    </div>
+    <div class="card">
+      <a href="https://mp.weixin.qq.com/s/sy6ADqhIq69YXvVu0ahwrA" target="_blank" class="article-item">
+        <div class="article-num">1</div>
+        <div class="article-title">我是怎么投资纳斯达克100的</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/2VgptVC4OVXfpHfdnoaBvg" target="_blank" class="article-item">
+        <div class="article-num">2</div>
+        <div class="article-title">你的财务自由需要多久【附测算工具】</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/i5BaGQDmCwbeKWIh8HeLdw" target="_blank" class="article-item">
+        <div class="article-num">3</div>
+        <div class="article-title">我的纪律系统：TQQQ估值模型</div>
+        <div class="article-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 投资认知 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-bar"></div>
+      <div class="section-title">投资认知</div>
+      <div class="section-count">7篇</div>
+    </div>
+    <div class="card">
+      <a href="https://mp.weixin.qq.com/s/IT2X94rrxJdIpnF7-oW7Jg" target="_blank" class="article-item">
+        <div class="article-num">1</div>
+        <div class="article-title">我是谁，为什么开始写这个公众号</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/WftaVBYTyo9NQ9sgSDCeow" target="_blank" class="article-item">
+        <div class="article-num">2</div>
+        <div class="article-title">普通人炒股，一场注定会输的游戏</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/EE_14emuvlaT6lkqPkFh5w" target="_blank" class="article-item">
+        <div class="article-num">3</div>
+        <div class="article-title">普通人退休能有1000万吗？</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/rB9_QqV_XBxwTdvlmhQDVw" target="_blank" class="article-item">
+        <div class="article-num">4</div>
+        <div class="article-title">上班，是为了赎身，不是当头牌</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/IgWxs0D75gC_tP-VGz5WsQ" target="_blank" class="article-item">
+        <div class="article-num">5</div>
+        <div class="article-title">你以为在炒股，其实在给别人送钱</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/0hxxbdTojk-_nX870gTWXw" target="_blank" class="article-item">
+        <div class="article-num">6</div>
+        <div class="article-title">2年3个月，我终于买了第一支美股</div>
+        <div class="article-arrow">→</div>
+      </a>
+      <a href="https://mp.weixin.qq.com/s/I24BrvMnoOKu8zl0NfshvA" target="_blank" class="article-item">
+        <div class="article-num">7</div>
+        <div class="article-title">一辆车，悄悄吃掉了我54万</div>
+        <div class="article-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">持续更新中 · 关注公众号「上班为了不上班」</div>
+
+</div>
+</body>
+</html>
