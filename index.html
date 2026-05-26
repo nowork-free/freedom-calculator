@@ -88,12 +88,20 @@
 
   .input-grid {
     display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .input-grid-3 {
+    display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 16px;
   }
 
   @media (max-width: 480px) {
     .input-grid { grid-template-columns: 1fr; gap: 12px; }
+    .input-grid-3 { grid-template-columns: 1fr; gap: 12px; }
   }
 
   .input-group label {
@@ -102,6 +110,13 @@
     font-weight: 600;
     color: var(--text-muted);
     margin-bottom: 8px;
+  }
+
+  .input-hint {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 400;
+    margin-left: 4px;
   }
 
   .input-wrapper { position: relative; }
@@ -134,6 +149,7 @@
   }
 
   .input-wrapper.has-suffix input { padding: 11px 28px 11px 12px; }
+  .input-wrapper.no-prefix input { padding: 11px 12px; }
 
   .input-wrapper input:focus {
     border-color: var(--accent);
@@ -292,12 +308,20 @@
   <div class="header">
     <div class="header-tag">上班为了不上班</div>
     <h1>你的财务自由还有多远？</h1>
-    <p>填入三个数字，算出属于你的答案</p>
+    <p>填入数字，算出属于你的答案</p>
   </div>
 
   <div class="card">
     <div class="card-title">输入你的数据</div>
+
     <div class="input-grid">
+      <div class="input-group">
+        <label>初始资金 <span class="input-hint">可填0</span></label>
+        <div class="input-wrapper">
+          <span class="input-prefix">¥</span>
+          <input type="number" id="initial" value="0" min="0" oninput="calculate()">
+        </div>
+      </div>
       <div class="input-group">
         <label>月定投额</label>
         <div class="input-wrapper">
@@ -305,6 +329,9 @@
           <input type="number" id="monthly" value="1500" min="0" oninput="calculate()">
         </div>
       </div>
+    </div>
+
+    <div class="input-grid-3">
       <div class="input-group">
         <label>年化收益率</label>
         <div class="input-wrapper has-suffix">
@@ -319,13 +346,27 @@
           <input type="number" id="expense" value="5000" min="0" oninput="calculate()">
         </div>
       </div>
+      <div class="input-group">
+        <label>财务自由目标</label>
+        <div class="result-display" id="res-target" style="
+          background: var(--table-bg);
+          border-radius: 10px;
+          padding: 11px 12px;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--accent);
+          height: 46px;
+          display: flex;
+          align-items: center;
+        ">¥150万</div>
+      </div>
     </div>
   </div>
 
   <div class="result-grid">
     <div class="result-card">
-      <div class="result-card-label">财务自由目标</div>
-      <div class="result-card-value" id="res-target">¥150万</div>
+      <div class="result-card-label">初始资金</div>
+      <div class="result-card-value" id="res-initial">¥0</div>
     </div>
     <div class="result-card highlight">
       <div class="result-card-label">所需时间</div>
@@ -378,6 +419,7 @@
   }
 
   function calculate() {
+    const initial = parseFloat(document.getElementById('initial').value) || 0;
     const monthly = parseFloat(document.getElementById('monthly').value) || 0;
     const annualRate = parseFloat(document.getElementById('rate').value) || 0;
     const expense = parseFloat(document.getElementById('expense').value) || 0;
@@ -386,28 +428,43 @@
     const target = expense * 12 / 0.04;
 
     document.getElementById('res-target').textContent = fmtMoney(target);
+    document.getElementById('res-initial').textContent = fmtMoney(initial);
 
-    let rawMonths = 0;
-    if (monthly > 0 && target > 0) {
-      if (monthlyRate === 0) {
-        rawMonths = target / monthly;
+    // 用逐月模拟找到达标时间（支持初始资金）
+    let totalMonths = 0;
+    if (target > 0 && (monthly > 0 || initial > 0)) {
+      // 先检查初始资金是否已达标
+      if (initial >= target) {
+        totalMonths = 0;
       } else {
-        rawMonths = Math.log(1 + (target * monthlyRate) / (monthly * (1 + monthlyRate))) / Math.log(1 + monthlyRate);
+        let fv = initial;
+        totalMonths = 0;
+        const maxMonths = 40 * 12;
+        while (fv < target && totalMonths < maxMonths) {
+          fv = fv * (1 + monthlyRate) + monthly;
+          totalMonths++;
+        }
+        if (fv < target) totalMonths = maxMonths;
       }
     }
 
-    const totalMonths = Math.ceil(rawMonths);
     const years = Math.floor(totalMonths / 12);
     const remainMonths = totalMonths % 12;
 
     let timeStr = '';
-    if (years > 0 && remainMonths > 0) timeStr = `${years}年${remainMonths}个月`;
-    else if (years > 0) timeStr = `${years}年`;
-    else timeStr = `${remainMonths}个月`;
+    if (totalMonths === 0) {
+      timeStr = '已达成';
+    } else if (years > 0 && remainMonths > 0) {
+      timeStr = `${years}年${remainMonths}个月`;
+    } else if (years > 0) {
+      timeStr = `${years}年`;
+    } else {
+      timeStr = `${remainMonths}个月`;
+    }
 
     document.getElementById('res-time').textContent = timeStr;
-    const achieveYear = currentYear + years;
-    document.getElementById('res-year').textContent = `${achieveYear}年`;
+    const achieveYear = currentYear + years + (remainMonths > 0 ? 1 : 0);
+    document.getElementById('res-year').textContent = totalMonths === 0 ? `${currentYear}年` : `${achieveYear}年`;
 
     const freedomYear = years + (remainMonths > 0 ? 1 : 0);
     const milestones = new Set([5, 10, 15, 20, 25, 30, 35, 40]);
@@ -416,12 +473,19 @@
     tbody.innerHTML = '';
 
     for (let y = 1; y <= 40; y++) {
-      const invested = monthly * 12 * y;
-      const fv = monthlyRate === 0
+      // 初始资金复利 + 定投复利
+      const initialFV = monthlyRate === 0
+        ? initial
+        : initial * Math.pow(1 + monthlyRate, 12 * y);
+
+      const dcaFV = monthlyRate === 0
         ? monthly * 12 * y
         : monthly * ((Math.pow(1 + monthlyRate, 12 * y) - 1) / monthlyRate) * (1 + monthlyRate);
-      const profit = fv - invested;
-      const returnRate = invested > 0 ? Math.round((profit / invested) * 100) : 0;
+
+      const fv = initialFV + dcaFV;
+      const totalInvested = initial + monthly * 12 * y;
+      const profit = fv - totalInvested;
+      const returnRate = totalInvested > 0 ? Math.round((profit / totalInvested) * 100) : 0;
 
       const isFreedom = (y === freedomYear);
       const isMilestone = milestones.has(y);
@@ -432,7 +496,7 @@
 
       tr.innerHTML = `
         <td>${y} 年${isFreedom ? `<span class="freedom-badge">财务自由</span><span class="freedom-year">${achieveYear}年达成</span>` : ''}</td>
-        <td>${fmtFull(invested)}</td>
+        <td>${fmtFull(totalInvested)}</td>
         <td class="${fv >= target ? 'green' : ''}">${fmtFull(fv)}</td>
         <td class="green">${fmtFull(profit)}</td>
         <td class="gold">${returnRate}%</td>
