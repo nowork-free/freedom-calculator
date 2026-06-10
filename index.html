@@ -58,6 +58,45 @@
 
   .header p { margin-top: 8px; font-size: 14px; color: var(--text-muted); }
 
+  /* Tab switcher */
+  .tab-switcher {
+    display: flex;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .tab-btn span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
   .card {
     background: var(--white);
     border-radius: 16px;
@@ -154,6 +193,18 @@
   .input-wrapper input:focus {
     border-color: var(--accent);
     background: var(--white);
+  }
+
+  .result-display {
+    background: var(--table-bg);
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    height: 46px;
+    display: flex;
+    align-items: center;
   }
 
   .result-grid {
@@ -300,6 +351,8 @@
     color: var(--text-light);
     line-height: 1.8;
   }
+
+  .hidden { display: none; }
 </style>
 </head>
 <body>
@@ -311,90 +364,176 @@
     <p>填入数字，算出属于你的答案</p>
   </div>
 
-  <div class="card">
-    <div class="card-title">输入你的数据</div>
+  <!-- Tab switcher -->
+  <div class="tab-switcher">
+    <button class="tab-btn active" onclick="switchTab('forward')" id="tab-forward">
+      已知定投金额
+      <span>算出需要多少年</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('reverse')" id="tab-reverse">
+      已知目标年限
+      <span>算出每月要投多少</span>
+    </button>
+  </div>
 
-    <div class="input-grid">
-      <div class="input-group">
-        <label>初始资金 <span class="input-hint">可填0</span></label>
-        <div class="input-wrapper">
-          <span class="input-prefix">¥</span>
-          <input type="number" id="initial" value="0" min="0" oninput="calculate()">
+  <!-- 正向：已知定投金额，算时间 -->
+  <div id="panel-forward">
+    <div class="card">
+      <div class="card-title">输入你的数据</div>
+
+      <div class="input-grid">
+        <div class="input-group">
+          <label>月度支出</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">¥</span>
+            <input type="number" id="expense" value="5000" min="0" oninput="calculateForward()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>月定投额</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">¥</span>
+            <input type="number" id="monthly" value="1500" min="0" oninput="calculateForward()">
+          </div>
         </div>
       </div>
-      <div class="input-group">
-        <label>月定投额</label>
-        <div class="input-wrapper">
-          <span class="input-prefix">¥</span>
-          <input type="number" id="monthly" value="1500" min="0" oninput="calculate()">
+
+      <div class="input-grid-3">
+        <div class="input-group">
+          <label>初始资金 <span class="input-hint">可填0</span></label>
+          <div class="input-wrapper">
+            <span class="input-prefix">¥</span>
+            <input type="number" id="initial" value="0" min="0" oninput="calculateForward()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>年化收益率</label>
+          <div class="input-wrapper has-suffix">
+            <input type="number" id="rate" value="12" min="0" max="100" step="0.1" oninput="calculateForward()">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>财务自由目标</label>
+          <div class="result-display" id="res-target">¥150万</div>
         </div>
       </div>
     </div>
 
-    <div class="input-grid-3">
-      <div class="input-group">
-        <label>年化收益率</label>
-        <div class="input-wrapper has-suffix">
-          <input type="number" id="rate" value="12" min="0" max="100" step="0.1" oninput="calculate()">
-          <span class="input-suffix">%</span>
-        </div>
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="result-card-label">初始资金</div>
+        <div class="result-card-value" id="res-initial">¥0</div>
       </div>
-      <div class="input-group">
-        <label>月度支出</label>
-        <div class="input-wrapper">
-          <span class="input-prefix">¥</span>
-          <input type="number" id="expense" value="5000" min="0" oninput="calculate()">
-        </div>
+      <div class="result-card highlight">
+        <div class="result-card-label">所需时间</div>
+        <div class="result-card-value" id="res-time">20年1个月</div>
       </div>
-      <div class="input-group">
-        <label>财务自由目标</label>
-        <div class="result-display" id="res-target" style="
-          background: var(--table-bg);
-          border-radius: 10px;
-          padding: 11px 12px;
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--accent);
-          height: 46px;
-          display: flex;
-          align-items: center;
-        ">¥150万</div>
+      <div class="result-card highlight2">
+        <div class="result-card-label">预计达成年份</div>
+        <div class="result-card-value" id="res-year">2046年</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <h2>复利推演 · 逐年追踪</h2>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>投资时长</th>
+              <th>累计投入</th>
+              <th>资产规模</th>
+              <th>投资收益</th>
+              <th>总收益率</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div class="result-grid">
-    <div class="result-card">
-      <div class="result-card-label">初始资金</div>
-      <div class="result-card-value" id="res-initial">¥0</div>
-    </div>
-    <div class="result-card highlight">
-      <div class="result-card-label">所需时间</div>
-      <div class="result-card-value" id="res-time">20年1个月</div>
-    </div>
-    <div class="result-card highlight2">
-      <div class="result-card-label">预计达成年份</div>
-      <div class="result-card-value" id="res-year">2046年</div>
-    </div>
-  </div>
+  <!-- 反向：已知目标年限，算定投金额 -->
+  <div id="panel-reverse" class="hidden">
+    <div class="card">
+      <div class="card-title">输入你的数据</div>
 
-  <div class="table-card">
-    <div class="table-card-header">
-      <h2>复利推演 · 逐年追踪</h2>
+      <div class="input-grid">
+        <div class="input-group">
+          <label>月度支出</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">¥</span>
+            <input type="number" id="r-expense" value="15000" min="0" oninput="calculateReverse()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>目标年限</label>
+          <div class="input-wrapper has-suffix">
+            <input type="number" id="r-years" value="30" min="1" max="40" oninput="calculateReverse()" class="no-prefix">
+            <span class="input-suffix">年</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-grid-3">
+        <div class="input-group">
+          <label>初始资金 <span class="input-hint">可填0</span></label>
+          <div class="input-wrapper">
+            <span class="input-prefix">¥</span>
+            <input type="number" id="r-initial" value="0" min="0" oninput="calculateReverse()">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>年化收益率</label>
+          <div class="input-wrapper has-suffix">
+            <input type="number" id="r-rate" value="12" min="0" max="100" step="0.1" oninput="calculateReverse()">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>财务自由目标</label>
+          <div class="result-display" id="r-res-target">¥450万</div>
+        </div>
+      </div>
     </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>投资时长</th>
-            <th>累计投入</th>
-            <th>资产规模</th>
-            <th>投资收益</th>
-            <th>总收益率</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
+
+    <div class="result-grid">
+      <div class="result-card highlight">
+        <div class="result-card-label">每月需定投</div>
+        <div class="result-card-value" id="r-res-monthly">¥1,472</div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-label">累计投入</div>
+        <div class="result-card-value" id="r-res-total">¥53万</div>
+      </div>
+      <div class="result-card highlight2">
+        <div class="result-card-label">预计达成年份</div>
+        <div class="result-card-value" id="r-res-year">2056年</div>
+      </div>
+    </div>
+
+    <!-- 不同年限对比表 -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h2>不同年限 · 每月需投金额对比</h2>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>目标年限</th>
+              <th>每月定投</th>
+              <th>累计投入</th>
+              <th>最终资产</th>
+              <th>达成年份</th>
+            </tr>
+          </thead>
+          <tbody id="r-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -418,7 +557,23 @@
     return '¥' + Math.round(n).toLocaleString('zh-CN');
   }
 
-  function calculate() {
+  function switchTab(tab) {
+    if (tab === 'forward') {
+      document.getElementById('panel-forward').classList.remove('hidden');
+      document.getElementById('panel-reverse').classList.add('hidden');
+      document.getElementById('tab-forward').classList.add('active');
+      document.getElementById('tab-reverse').classList.remove('active');
+    } else {
+      document.getElementById('panel-forward').classList.add('hidden');
+      document.getElementById('panel-reverse').classList.remove('hidden');
+      document.getElementById('tab-forward').classList.remove('active');
+      document.getElementById('tab-reverse').classList.add('active');
+      calculateReverse();
+    }
+  }
+
+  // 正向计算：已知定投金额，算时间
+  function calculateForward() {
     const initial = parseFloat(document.getElementById('initial').value) || 0;
     const monthly = parseFloat(document.getElementById('monthly').value) || 0;
     const annualRate = parseFloat(document.getElementById('rate').value) || 0;
@@ -430,10 +585,8 @@
     document.getElementById('res-target').textContent = fmtMoney(target);
     document.getElementById('res-initial').textContent = fmtMoney(initial);
 
-    // 用逐月模拟找到达标时间（支持初始资金）
     let totalMonths = 0;
     if (target > 0 && (monthly > 0 || initial > 0)) {
-      // 先检查初始资金是否已达标
       if (initial >= target) {
         totalMonths = 0;
       } else {
@@ -441,7 +594,7 @@
         totalMonths = 0;
         const maxMonths = 40 * 12;
         while (fv < target && totalMonths < maxMonths) {
-          fv = fv * (1 + monthlyRate) + monthly;
+          fv = (fv + monthly) * (1 + monthlyRate);
           totalMonths++;
         }
         if (fv < target) totalMonths = maxMonths;
@@ -473,7 +626,6 @@
     tbody.innerHTML = '';
 
     for (let y = 1; y <= 40; y++) {
-      // 初始资金复利 + 定投复利
       const initialFV = monthlyRate === 0
         ? initial
         : initial * Math.pow(1 + monthlyRate, 12 * y);
@@ -505,7 +657,85 @@
     }
   }
 
-  calculate();
+  // 反向计算：已知目标年限，算每月定投额
+  function calculateReverse() {
+    const expense = parseFloat(document.getElementById('r-expense').value) || 0;
+    const targetYears = parseFloat(document.getElementById('r-years').value) || 30;
+    const annualRate = parseFloat(document.getElementById('r-rate').value) || 0;
+    const initial = parseFloat(document.getElementById('r-initial').value) || 0;
+
+    const monthlyRate = annualRate / 100 / 12;
+    const target = expense * 12 / 0.04;
+
+    document.getElementById('r-res-target').textContent = fmtMoney(target);
+
+    // 计算需要的月定投额
+    // FV = initial * (1+r)^n + monthly * ((1+r)^n - 1) / r * (1+r) = target
+    // 解 monthly
+    const n = targetYears * 12;
+    let monthly = 0;
+    if (target > 0) {
+      const initialFV = monthlyRate === 0
+        ? initial
+        : initial * Math.pow(1 + monthlyRate, n);
+      const remaining = target - initialFV;
+      if (remaining <= 0) {
+        monthly = 0;
+      } else if (monthlyRate === 0) {
+        monthly = remaining / n;
+      } else {
+        const factor = ((Math.pow(1 + monthlyRate, n) - 1) / monthlyRate) * (1 + monthlyRate);
+        monthly = remaining / factor;
+      }
+    }
+
+    monthly = monthly > 0 ? Math.ceil(monthly) : 0;
+    document.getElementById('r-res-monthly').textContent = monthly <= 0 ? '已达成' : fmtFull(monthly);
+
+    const totalInvested = initial + monthly * n;
+    document.getElementById('r-res-total').textContent = fmtMoney(totalInvested);
+    document.getElementById('r-res-year').textContent = `${currentYear + targetYears}年`;
+
+    // 不同年限对比表
+    const yearOptions = [10, 15, 20, 25, 30, 35, 40];
+    const tbody = document.getElementById('r-table-body');
+    tbody.innerHTML = '';
+
+    yearOptions.forEach(y => {
+      const nn = y * 12;
+      const initFV = monthlyRate === 0
+        ? initial
+        : initial * Math.pow(1 + monthlyRate, nn);
+      const rem = target - initFV;
+      let m = 0;
+      if (rem > 0) {
+        if (monthlyRate === 0) {
+          m = rem / nn;
+        } else {
+          const f = ((Math.pow(1 + monthlyRate, nn) - 1) / monthlyRate) * (1 + monthlyRate);
+          m = rem / f;
+        }
+      }
+
+      const totalInv = initial + Math.ceil(m) * nn;
+      const achieveYear = currentYear + y;
+      const isSelected = (y === targetYears);
+
+      const tr = document.createElement('tr');
+      if (isSelected) tr.classList.add('freedom-row');
+
+      tr.innerHTML = `
+        <td>${y} 年${isSelected ? '<span class="freedom-badge">当前选择</span>' : ''}</td>
+        <td class="green">${m <= 0 ? '已达成' : fmtFull(Math.ceil(m))}</td>
+        <td>${fmtFull(totalInv)}</td>
+        <td>${fmtMoney(target)}</td>
+        <td class="gold">${achieveYear}年</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  calculateForward();
 </script>
 </body>
 </html>
